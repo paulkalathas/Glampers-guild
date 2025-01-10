@@ -255,6 +255,8 @@
     <!-- JavaScript -->
     <script>
       let map, autocomplete, marker, isSidebarOpen = false;
+      let tripCounter = 1;
+      let bookingCounter = 1;
 
       window.onload = function () {
         setTimeout(() => {
@@ -322,15 +324,85 @@
       }
 
       function createTrip() {
-        alert('Trip created successfully!');
+        const tripName = document.getElementById('tripName').value;
+        const organizer = document.getElementById('organizer').value;
+        const startDate = document.getElementById('startDate').value;
+        const endDate = document.getElementById('endDate').value;
+        const location = document.getElementById('location').value;
+
+        const tripId = `GGTP_${String(tripCounter).padStart(5, '0')}`;
+        tripCounter++;
+
+        const tripData = {
+          tripId,
+          tripName,
+          organizer,
+          startDate,
+          endDate,
+          location,
+        };
+
+        alert(`Trip Created:\nID: ${tripId}\nName: ${tripName}\nOrganizer: ${organizer}\nDates: ${startDate} to ${endDate}\nLocation: ${location}`);
+
+        sendDataToGoogleSheet('TRIP', tripData);
       }
 
       function createBooking() {
-        alert('Booking created successfully!');
+        const tripId = document.getElementById('tripId').value;
+        const bookingName = document.getElementById('bookingName').value;
+        const email = document.getElementById('email').value;
+        const phone = document.getElementById('phone').value;
+        const checkInDate = document.getElementById('checkInDate').value;
+        const checkOutDate = document.getElementById('checkOutDate').value;
+        const adults = document.getElementById('adults').value;
+        const children = document.getElementById('children').value;
+        const pets = document.getElementById('pets').value;
+
+        const bookingId = `GGBK_${String(bookingCounter).padStart(5, '0')}`;
+        bookingCounter++;
+
+        const bookingData = {
+          bookingId,
+          tripId,
+          bookingName,
+          email,
+          phone,
+          checkInDate,
+          checkOutDate,
+          adults,
+          children,
+          pets,
+        };
+
+        alert(`Booking Created:\nID: ${bookingId}\nName: ${bookingName}\nTrip ID: ${tripId}\nDates: ${checkInDate} to ${checkOutDate}\nAdults: ${adults}, Children: ${children}, Pets: ${pets}`);
+
+        sendDataToGoogleSheet('BOOKING', bookingData);
       }
 
-      function getBooking() {
-        alert('Booking details retrieved successfully!');
+      function sendDataToGoogleSheet(sheetType, data) {
+        const apiUrl = 'https://sheets.googleapis.com/v4/spreadsheets/1mXmTJC20ICFOcOHb0k6DjESpInVAQDjvwgvBeWBigq4/values:append';
+        const apiKey = 'AIzaSyDOSXHu6FHowvCeEVmoTWvHqJ0r6AqIkWs';
+
+        const requestBody = {
+          range: `${sheetType}!A1`,
+          values: [Object.values(data)],
+          majorDimension: 'ROWS',
+        };
+
+        fetch(`${apiUrl}?key=${apiKey}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(requestBody),
+        })
+          .then(response => response.json())
+          .then(result => {
+            console.log('Data sent to Google Sheet:', result);
+          })
+          .catch(error => {
+            console.error('Error sending data to Google Sheet:', error);
+          });
       }
     </script>
 
